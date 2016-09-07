@@ -43,8 +43,7 @@ remove_old_offline_vms() {
 		local age=$("$scriptroot"/util/vbox-get-state-age "$vm")
 		if [[ $age -gt $max_age ]]; then
 			echo "$vm has been offline for ${age} seconds, removing"
-			# yes, i know this makes bad assumptions.
-			rm -rf -- "$HOME/$vm"
+			vboxmanage unregistervm "$vm" --delete
 		fi
 	done < <("$scriptroot"/util/vbox-get-all-vm-names)
 }

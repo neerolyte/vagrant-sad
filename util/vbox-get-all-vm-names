@@ -1,3 +1,3 @@
 #!/bin/bash -e
 
-VBoxManage list vms | sed -r 's/^"(.*)" \{([a-z0-9-]+)\}$/\1/'
+VBoxManage list vms | sed -r 's/^"(.*)" \{([a-z0-9-]+)\}$/\1/' | egrep -v '^<inaccessible>$'
