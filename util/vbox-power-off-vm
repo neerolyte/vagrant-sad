@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+vm="$1"
+VBoxManage controlvm "$vm" poweroff

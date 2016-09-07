@@ -1,0 +1,52 @@
+#!/bin/bash -e
+
+# Clean up VirtualBox VMs that seem to have been hanging around too long.
+# This is probably not something you want to run on your laptop.
+#
+# Usage:
+#  $ max_run_age=N max_off_age=N ./clean-up-vbox-vms
+#
+# e.g to power off VMs that have been running more than 1 hour:
+#  $ max_run_age=3600 ./clean-up-vbox-vms
+# to remove VMs that have been hanging around on disk (not running) for more
+# than 1 day:
+#  $ max_off_age=86400 ./clean-up-vbox-vms
+#
+# Note: it's assumed that max_off_age will only be used when a smaller
+# max_run_age is supplied.
+
+scriptroot="$(cd -- "$(dirname -- "$0")" && pwd)"
+
+main() {
+	if [[ "$max_run_age" != '' ]]; then
+		halt_long_running_vms "$max_run_age"
+	fi
+	if [[ "$max_off_age" != '' ]]; then
+		remove_old_offline_vms "$max_off_age"
+	fi
+}
+
+halt_long_running_vms() {
+	local max_age="$1"
+	while read vm; do
+		local age=$("$scriptroot"/util/vbox-get-state-age "$vm")
+		if [[ $age -gt $max_age ]]; then
+			echo "$vm has been online for ${age} seconds, killing"
+			"$scriptroot"/util/vbox-power-off-vm "$vm"
+		fi
+	done < <("$scriptroot"/util/vbox-get-running-vm-names)
+}
+
+remove_old_offline_vms() {
+	local max_age="$1"
+	while read vm; do
+		local age=$("$scriptroot"/util/vbox-get-state-age "$vm")
+		if [[ $age -gt $max_age ]]; then
+			echo "$vm has been offline for ${age} seconds, removing"
+			# yes, i know this makes bad assumptions.
+			rm -rf -- "$HOME/$vm"
+		fi
+	done < <("$scriptroot"/util/vbox-get-all-vm-names)
+}
+
+main
