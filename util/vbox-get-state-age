@@ -2,7 +2,7 @@
 
 vm="$1"
 time="$(vboxmanage showvminfo --machinereadable "$vm" | grep ^VMStateChangeTime= | sed -r 's/.*"(.*)"/\1/')"
-start="$(date +%s --date="$time +00:00")"
+start="$(date +%s --date="$time")"
 now="$(date +%s)"
 seconds=$(($now - $start))
 echo "$seconds"
